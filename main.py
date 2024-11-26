@@ -17,7 +17,8 @@ HTTP_PORT = 23481
 
 class MotionDetectionHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
-        print(f"🌐 {self.client_address[0]} - - [{self.log_date_time_string()}] {format % args}")
+        print(
+            f"🌐 Client from {self.client_address[0]} made a request at {self.log_date_time_string()}: {format % args}")
 
     def do_GET(self):
         if self.path == '/':
@@ -153,7 +154,8 @@ def detect_motion():
                     'motion_value': int(motion_pixels),
                 }
                 motion_records.append(motion_record)
-                print(f"📢 Motion detected at {current_time} with value {int(motion_pixels)}")
+                print(
+                    f"📢 Motion detected at {current_time} with value {int(motion_pixels)}")
 
         # 다음 비교를 위해 현재 프레임 저장
         gray1 = gray2
@@ -173,7 +175,8 @@ if __name__ == '__main__':
     motion_thread.daemon = True
     motion_thread.start()
 
-    print(f"🚀 Server running on port {HTTP_PORT}. Use 'Ctrl + C' to stop motion detection and exit.")
+    print(
+        f"🚀 Server running on port {HTTP_PORT}, use 'Ctrl + C' if you want to stop motion detection and exit.")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

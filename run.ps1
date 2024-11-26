@@ -7,6 +7,9 @@ elseif (Test-Path ".\venv\Scripts\Activate.ps1") {
     $venvPath = ".\venv\Scripts\Activate.ps1"
 } 
 
+# Install requirements
+& pip install -r requirements.txt
+
 # Activate virtual environment
 & $venvPath
 
