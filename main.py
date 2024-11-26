@@ -16,6 +16,9 @@ HTTP_PORT = 23481
 
 
 class MotionDetectionHandler(BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        print(f"🌐 {self.client_address[0]} - - [{self.log_date_time_string()}] {format % args}")
+
     def do_GET(self):
         if self.path == '/':
             self.send_response(200)
@@ -29,7 +32,10 @@ class MotionDetectionHandler(BaseHTTPRequestHandler):
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <link rel="icon" href="./favicon.ico" type="image/x-icon">
+                <link rel="icon" href="./favicon-32x32.png" sizes="32x32" type="image/png">
+                <link rel="icon" href="./favicon-64x64.png" sizes="64x64" type="image/png">
+                <link rel="icon" href="./favicon-128x128.png" sizes="128x128" type="image/png">
+                <link rel="icon" href="./favicon-416x416.png" sizes="416x416" type="image/png">
                 <style>
                     body { font-family: Arial, sans-serif; }
                     table { width: 100%; border-collapse: collapse; }
@@ -91,11 +97,11 @@ class MotionDetectionHandler(BaseHTTPRequestHandler):
             </html>
             """
             self.wfile.write(html_content.encode())
-        elif self.path == '/favicon.ico':
+        elif self.path.startswith('/favicon-'):
             self.send_response(200)
-            self.send_header('Content-type', 'image/x-icon')
+            self.send_header('Content-type', 'image/png')
             self.end_headers()
-            with open('favicon.ico', 'rb') as f:
+            with open(self.path[1:], 'rb') as f:
                 self.wfile.write(f.read())
         else:
             self.send_response(404)
@@ -110,7 +116,7 @@ def detect_motion():
     # 첫 프레임 초기화
     ret, frame1 = cap.read()
     if not ret:
-        print("Cannot open webcam!")
+        print("❌ Cannot open webcam!")
         return
 
     # 첫 프레임을 그레이스케일로 변환 및 가우시안 블러 적용
@@ -147,17 +153,10 @@ def detect_motion():
                     'motion_value': int(motion_pixels),
                 }
                 motion_records.append(motion_record)
-                print(f"Motion detected: {motion_record}")
+                print(f"📢 Motion detected at {current_time} with value {int(motion_pixels)}")
 
         # 다음 비교를 위해 현재 프레임 저장
         gray1 = gray2
-
-        # 모션 감지 창 표시 (디버깅용)
-        cv2.imshow('Motion Detection', thresh)
-
-        # 'q' 키를 누르면 종료
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
 
     # 리소스 해제
     cap.release()
@@ -174,9 +173,9 @@ if __name__ == '__main__':
     motion_thread.daemon = True
     motion_thread.start()
 
-    print(f"Server running on port {HTTP_PORT}...")
+    print(f"🚀 Server running on port {HTTP_PORT}. Use 'Ctrl + C' to stop motion detection and exit.")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("\nShutting down the server.")
+        print("🛑 Shutting down the server.")
         httpd.server_close()
